@@ -1,0 +1,35 @@
+{
+  "name": "ilumeo_test",
+  "version": "1.0.0",
+  "description": "Teste técnico realizado para Ilumeo para a vaga fullstack developer.",
+  "main": "dist/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/server.ts",
+    "build": "esbuild src --bundle --platform=node --outfile=dist/src --external:express --external:cors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paulomellodev/ilumeo_test.git"
+  },
+  "author": "Paulo Mello",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/paulomellodev/ilumeo_test/issues"
+  },
+  "homepage": "https://github.com/paulomellodev/ilumeo_test#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.1.0",
+    "@types/uuid": "^9.0.1",
+    "prisma": "^4.13.0",
+    "tsx": "^3.12.7",
+    "typescript": "^5.0.4"
+  }
+}
