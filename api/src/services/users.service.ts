@@ -10,8 +10,8 @@ import AppErrors from "../errors/app.error";
 
 class UserService {
   private prisma: typeof prismaClient.user;
-  constructor(prisma: typeof prismaClient.user) {
-    this.prisma = prisma;
+  constructor() {
+    this.prisma = prismaClient.user;
   }
   async insert(data: userCreateType): Promise<userType> {
     const createdUser = await this.prisma.create({
@@ -39,4 +39,4 @@ class UserService {
   }
 }
 
-export default new UserService(prismaClient.user);
+export default new UserService();

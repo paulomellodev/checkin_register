@@ -1,10 +1,12 @@
 import { prismaClient } from "../database/prismaClient";
+import { checkinDateReturnManySchema } from "../dto/checkinDate.dto";
 import {
   checkinDateCreateType,
   checkinDateSchema,
   checkinDateType,
 } from "../dto/checkinDate.dto";
 import AppErrors from "../errors/app.error";
+import { calculateWorkingHours } from "../utils/calculateHours";
 
 class CheckinService {
   private prisma: typeof prismaClient.checkinDate;
@@ -21,24 +23,33 @@ class CheckinService {
       where: {
         AND: [
           {
-            date: {
-              equals: formattedData.date,
-            },
+            date: formattedData.date,
           },
           {
             userId: formattedData.userId,
           },
         ],
       },
+      include: {
+        checkin_time: true,
+      },
     });
 
-    if (foundCheckinToday) {
-      const totalHours = foundCheckinToday;
-      const registeredCheckin = await this.prisma.update({
+    if (!!foundCheckinToday) {
+      const parsedFoundcheckin = checkinDateSchema.parse(foundCheckinToday);
+      const totalHours = calculateWorkingHours(
+        parsedFoundcheckin.checkin_time,
+        data.date
+      )
+        .toLocaleString("pt-BR")
+        .substring(12);
+
+      const updatedCheckin = await this.prisma.update({
         where: {
           id: foundCheckinToday.id,
         },
         data: {
+          total_hours: totalHours,
           checkin_time: {
             create: {
               time: data.date.toLocaleTimeString("pt-BR"),
@@ -47,24 +58,31 @@ class CheckinService {
         },
         include: { checkin_time: true },
       });
+      return checkinDateSchema.parse(updatedCheckin);
     }
-
-    registeredCheckin.checkin_time.push();
-
-    const parsedRegistered = checkinDateSchema.parse(registeredCheckin);
+    const registeredCheckin = await this.prisma.create({
+      data: {
+        ...formattedData,
+        checkin_time: {
+          create: [{ time: data.date.toLocaleTimeString("pt-BR") }],
+        },
+      },
+      include: { checkin_time: true },
+    });
 
     return checkinDateSchema.parse(registeredCheckin);
   }
 
-  findByCode(code: string): Promise<userType | undefined> | userType {
+  async findCheckinsByUserId(userId: string) {
     try {
-      const foundUser = this.prisma.findUnique({
-        where: { code },
-        include: { checkin: true },
+      const foundAllCheckins = await this.prisma.findMany({
+        where: { userId },
+        include: { checkin_time: true },
+        orderBy: { date: "desc" },
       });
-      return userSchema.parse(foundUser);
+      return checkinDateReturnManySchema.parse(foundAllCheckins);
     } catch (error) {
-      throw new AppErrors(`User with code ${code} not found`, 404);
+      throw new AppErrors(`User with this ID ${userId} not found`, 404);
     }
   }
 }

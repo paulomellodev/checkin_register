@@ -7,8 +7,8 @@ import { Request, Response } from "express";
 class UserController {
   private userService: typeof usersService;
 
-  constructor(service: typeof usersService) {
-    this.userService = service;
+  constructor() {
+    this.userService = usersService;
   }
 
   async create(req: Request, res: Response) {
@@ -34,4 +34,4 @@ class UserController {
   }
 }
 
-export default new UserController(usersService);
+export default new UserController();

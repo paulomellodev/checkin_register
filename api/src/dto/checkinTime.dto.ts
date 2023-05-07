@@ -14,7 +14,14 @@ const checkinTimeReturnManySchema = checkinTimeCreateSchema
   .omit({ checkinDateId: true })
   .array();
 
+type checkinTimeType = z.infer<typeof checkinTimeSchema>;
+type checkinTimeCreateType = z.infer<typeof checkinTimeCreateSchema>;
+type checkinTimeReturnManyType = z.infer<typeof checkinTimeReturnManySchema>;
+
 export {
+  checkinTimeType,
+  checkinTimeCreateType,
+  checkinTimeReturnManyType,
   checkinTimeSchema,
   checkinTimeCreateSchema,
   checkinTimeReturnManySchema,

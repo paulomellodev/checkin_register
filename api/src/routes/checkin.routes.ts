@@ -13,6 +13,7 @@ class CheckinRoutes {
 
   private buildRoutes() {
     this.routes.post("/register", checkinsController.register);
+    this.routes.get("/:id", checkinsController.retrieveCheckin);
   }
 }
 

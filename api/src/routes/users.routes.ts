@@ -1,8 +1,6 @@
 import { Router, IRoute } from "express";
 import usersController from "../controllers/users.controller";
 
-const router = Router();
-
 class UserRoutes {
   public routes: Router;
   constructor(routerExpress: Router) {
