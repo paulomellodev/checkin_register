@@ -1,11 +1,7 @@
 import express, { Application, Request, Response, Router, json } from "express";
 import cors from "cors";
-
-const router = Router();
-
-router.get("/", (req: Request, res: Response) => {
-  res.send("Opa o que aconteceu?");
-});
+import usersRoutes from "./routes/users.routes";
+import checkinRoutes from "./routes/checkin.routes";
 
 class App {
   public app: Application;
@@ -14,7 +10,8 @@ class App {
     this.app = express();
     this.app.use(cors());
     this.app.use(json());
-    this.routes("/", router);
+    this.routes("/users", usersRoutes.routes);
+    this.routes("/checkin", checkinRoutes.routes);
   }
 
   private routes(endpoint: string, routes: Router): void {
