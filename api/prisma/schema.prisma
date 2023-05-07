@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider          = "prisma-client-js"
+  binaryTargets     = ["native", "linux-musl"]
+  previewFeatures   = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  extensions    = [pgcrypto]
+}
+
+model User{
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  code          String          @unique
+  checkin       CheckinDate[]
+  createdAt     DateTime        @default(now())
+
+  @@map("users")
+}
+
+model CheckinDate{
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date          DateTime        @db.Date
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String          @db.Uuid
+  total_hours   DateTime        @db.Time(4)
+  checkin_time  CheckinTime[]
+  
+  @@map("checkin_date")
+}
+
+model CheckinTime{
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  time          DateTime        @db.Time(4)
+  checkinDate   CheckinDate     @relation(fields: [dateId], references: [id], onDelete: Cascade)
+  dateId        String          @db.Uuid
+  
+  @@map("checkin_time")
+}

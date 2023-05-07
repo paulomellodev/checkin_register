@@ -19,7 +19,9 @@
   },
   "homepage": "https://github.com/paulomellodev/ilumeo_test#readme",
   "dependencies": {
+    "@prisma/client": "^4.13.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "uuid": "^9.0.0"
   },
