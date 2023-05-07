@@ -4,7 +4,7 @@ import cors from "cors";
 const router = Router();
 
 router.get("/", (req: Request, res: Response) => {
-  res.send("Chegou");
+  res.send("Opa o que aconteceu?");
 });
 
 class App {

@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+  db:
+    container_name: ilumeo_db
+    image: postgres
+    env_file:
+      - "./api/.env"
+    expose:
+      - 5432
+    ports:
+      - 5436:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 2s
+
+  migration:
+    container_name: ilumeo_migration
+    build:
+      context: "./api"
+    command: npx prisma migrate dev
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    container_name: ilumeo_api
+    build:
+      context: "./api"
+      dockerfile: Dockerfile
+    env_file:
+      - "./api/.env"
+    expose:
+      - 3030
+    ports:
+      - 3030:3030
+    command: npm run dev
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./api:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      migration:
+        condition: service_started
+
+  web:
+    container_name: ilumeo_web
+    stdin_open: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    build:
+      context: "./web"
+      dockerfile: Dockerfile
+    expose:
+      - 5173
+    ports:
+      - 5173:5173
+    command: npm run dev
+    volumes:
+      - ./web:/app
+    depends_on:
+      - api
