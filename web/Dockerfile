@@ -1,10 +1,10 @@
-FROM node:alpine
+FROM node
 
 WORKDIR /app
 
 EXPOSE 5173
 
-COPY package.json ./
+COPY package*.json ./
 
 RUN npm install
 

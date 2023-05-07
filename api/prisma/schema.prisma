@@ -3,7 +3,7 @@
 
 generator client {
   provider          = "prisma-client-js"
-  binaryTargets     = ["native", "linux-musl"]
+  binaryTargets     = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
   previewFeatures   = ["postgresqlExtensions"]
 }
 
@@ -28,7 +28,7 @@ model CheckinDate{
   date          DateTime        @db.Date
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String          @db.Uuid
-  total_hours   DateTime        @db.Time(4)
+  total_hours   DateTime?       @db.Time(4)
   checkin_time  CheckinTime[]
   
   @@map("checkin_date")
