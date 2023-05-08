@@ -1,22 +1,38 @@
-import express, { Application, Request, Response, Router, json } from "express";
+import "express-async-errors";
+import express, {
+  Application,
+  NextFunction,
+  Request,
+  Response,
+  Router,
+  json,
+} from "express";
 import cors from "cors";
-import usersRoutes from "./routes/users.routes";
-import checkinRoutes from "./routes/checkin.routes";
+import userRouter from "./routes/users.routes";
+import AppErrors from "./errors/app.error";
+import { prismaClient } from "./database/prismaClient";
+import checkinRouter from "./routes/checkin.routes";
 
-class App {
-  public app: Application;
+const app: Application = express();
+app.use(cors());
+app.use(json());
+app.get("/me", async (req, res) => {
+  const result = await prismaClient.user.findMany();
+  res.json(result);
+});
+app.use("/users", userRouter);
+app.use("/checkin", checkinRouter);
 
-  constructor() {
-    this.app = express();
-    this.app.use(cors());
-    this.app.use(json());
-    this.routes("/users", usersRoutes.routes);
-    this.routes("/checkin", checkinRoutes.routes);
+app.use(
+  (err: Error, request: Request, response: Response, next: NextFunction) => {
+    if (err instanceof AppErrors) {
+      return response.status(err.status).json({
+        error: err.message,
+      });
+    }
+    return response.status(400).json({
+      error: err.message,
+    });
   }
-
-  private routes(endpoint: string, routes: Router): void {
-    this.app.use(endpoint, routes);
-  }
-}
-
-export default App;
+);
+export default app;

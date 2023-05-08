@@ -1,21 +1,14 @@
 import { z } from "zod";
-import { checkinTimeReturnManySchema } from "./checkinTime.dto";
 
 const checkinDateSchema = z.object({
   id: z.string().uuid(),
   date: z.date(),
   userId: z.string().uuid(),
   total_hours: z.date().optional(),
-  checkin_time: checkinTimeReturnManySchema.transform((els) => {
-    return els.map((el) => {
-      return el.time;
-    });
-  }),
 });
 
 const checkinDateCreateSchema = checkinDateSchema.omit({
   id: true,
-  checkin_time: true,
   total_hours: true,
 });
 

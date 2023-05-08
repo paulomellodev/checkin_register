@@ -1,13 +1,13 @@
 export const calculateWorkingHours = (
-  checkin_time: Date[],
+  foundCheckinToday: any,
   newCheckin: Date
 ) => {
   let timeDifference = 0;
   let day = newCheckin.toLocaleDateString("pt-BR");
 
-  if (checkin_time.length % 2 === 1) {
-    for (let i = checkin_time.length; i > 0; i = i - 2) {
-      const clockIn = new Date(day + checkin_time[i - 1]);
+  if (foundCheckinToday.length % 2 === 1) {
+    for (let i = foundCheckinToday.length; i > 0; i = i - 2) {
+      const clockIn = new Date(foundCheckinToday[i - 1].date);
       const clockOut = newCheckin;
       timeDifference += clockOut.getTime() - clockIn.getTime();
     }

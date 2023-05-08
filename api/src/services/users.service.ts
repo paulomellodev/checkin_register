@@ -8,35 +8,29 @@ import {
 import { prismaClient } from "../database/prismaClient";
 import AppErrors from "../errors/app.error";
 
-class UserService {
-  private prisma: typeof prismaClient.user;
-  constructor() {
-    this.prisma = prismaClient.user;
-  }
-  async insert(data: userCreateType): Promise<userType> {
-    const createdUser = await this.prisma.create({
-      data,
+export const insert = async (data: userCreateType): Promise<userType> => {
+  const createdUser = await prismaClient.user.create({
+    data,
+  });
+
+  return userSchema.parse(createdUser);
+};
+
+export const getUsers = async (): Promise<userReturnManyType> => {
+  const users = await prismaClient.user.findMany();
+
+  return userReturnManySchema.parse(users);
+};
+export const findByCode = async (
+  code: string
+): Promise<userType | undefined> => {
+  try {
+    const foundUser = prismaClient.user.findUnique({
+      where: { code },
       include: { checkin: true },
     });
-
-    return userSchema.parse(createdUser);
+    return userSchema.parse(foundUser);
+  } catch (error) {
+    throw new AppErrors(`User with code ${code} not found`, 404);
   }
-  async getUsers(): Promise<userReturnManyType> {
-    const users = await this.prisma.findMany();
-
-    return userReturnManySchema.parse(users);
-  }
-  findByCode(code: string): Promise<userType | undefined> | userType {
-    try {
-      const foundUser = this.prisma.findUnique({
-        where: { code },
-        include: { checkin: true },
-      });
-      return userSchema.parse(foundUser);
-    } catch (error) {
-      throw new AppErrors(`User with code ${code} not found`, 404);
-    }
-  }
-}
-
-export default new UserService();
+};

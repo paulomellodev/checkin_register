@@ -1,44 +1,37 @@
 import { ZodError } from "zod";
-import { userCreateSchema } from "../dto/user.dto";
 import AppErrors from "../errors/app.error";
-import { NextFunction, Request, Response } from "express";
-import checkinService from "../services/checkin.service";
+import { Request, Response } from "express";
+import { findCheckinsByUserId, insert } from "../services/checkin.service";
 import {
   checkinDateCreateSchema,
   checkinDateReturnManySchema,
 } from "../dto/checkinDate.dto";
 
-class CheckinController {
-  private checkinService: typeof checkinService;
+export const register = async (req: Request, res: Response) => {
+  try {
+    console.log("aqui");
+    const validated = checkinDateCreateSchema.parse({
+      ...req.body,
+      date: new Date(req.body.date),
+    });
 
-  constructor(service: typeof checkinService) {
-    this.checkinService = service;
-  }
+    const registeredCheckin = await insert(validated);
 
-  async register(req: Request, res: Response) {
-    try {
-      const validated = checkinDateCreateSchema.parse({
-        ...req.body,
-        userId: req.user.id,
-      });
-
-      const registeredCheckin = await this.checkinService.insert(validated);
-
-      return res.status(201).json(registeredCheckin);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        throw new AppErrors(error.flatten().fieldErrors);
-      }
+    return res.status(201).json(registeredCheckin);
+  } catch (error) {
+    console.log(error);
+    console.log(error instanceof ZodError);
+    if (error instanceof ZodError) {
+      console.log(error instanceof ZodError, "aqui");
+      throw new AppErrors(error.flatten().fieldErrors);
     }
   }
+};
 
-  async retrieveCheckin(req: Request, res: Response) {
-    const checkins = checkinDateReturnManySchema.parse(
-      await this.checkinService.findCheckinsByUserId(req.params.id)
-    );
+export const retrieveCheckin = async (req: Request, res: Response) => {
+  const checkins = checkinDateReturnManySchema.parse(
+    await findCheckinsByUserId(req.params.id)
+  );
 
-    return res.status(201).json(checkins);
-  }
-}
-
-export default new CheckinController(checkinService);
+  return res.status(201).json(checkins);
+};

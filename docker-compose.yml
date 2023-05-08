@@ -5,7 +5,9 @@ services:
     container_name: ilumeo_db
     image: postgres
     env_file:
-      - "./api/.env"
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=postgrespw
     expose:
       - 5432
     ports:
@@ -27,19 +29,16 @@ services:
         condition: service_healthy
 
   api:
+    stdin_open: true
     container_name: ilumeo_api
     build:
       context: "./api"
       dockerfile: Dockerfile
-    env_file:
-      - "./api/.env"
     expose:
       - 3030
     ports:
       - 3030:3030
     command: npm run dev
-    stdin_open: true
-    tty: true
     volumes:
       - ./api:/app
     depends_on:
@@ -47,10 +46,11 @@ services:
         condition: service_healthy
       migration:
         condition: service_started
+    restart: always
 
   web:
-    container_name: ilumeo_web
     stdin_open: true
+    container_name: ilumeo_web
     environment:
       - CHOKIDAR_USEPOLLING=true
     build:

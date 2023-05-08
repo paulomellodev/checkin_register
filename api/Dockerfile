@@ -2,8 +2,10 @@ FROM node:alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY . .
+
+COPY .env .
 
 RUN npm install
 
-COPY . .
+RUN npx prisma generate
