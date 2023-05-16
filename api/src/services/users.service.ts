@@ -1,3 +1,5 @@
+import { PrismaClient } from "@prisma/client";
+import { prisma } from "../database/prismaClient";
 import {
   userCreateType,
   userReturnManySchema,
@@ -5,32 +7,42 @@ import {
   userSchema,
   userType,
 } from "../dto/user.dto";
-import { prismaClient } from "../database/prismaClient";
 import AppErrors from "../errors/app.error";
 
-export const insert = async (data: userCreateType): Promise<userType> => {
-  const createdUser = await prismaClient.user.create({
-    data,
-  });
+class UsersServices {
+  private prismaUser: PrismaClient["user"];
 
-  return userSchema.parse(createdUser);
-};
-
-export const getUsers = async (): Promise<userReturnManyType> => {
-  const users = await prismaClient.user.findMany();
-
-  return userReturnManySchema.parse(users);
-};
-export const findByCode = async (
-  code: string
-): Promise<userType | undefined> => {
-  try {
-    const foundUser = prismaClient.user.findUnique({
-      where: { code },
+  constructor(prismaClient: PrismaClient) {
+    this.prismaUser = prismaClient.user;
+  }
+  async insert(data: userCreateType): Promise<userType> {
+    const createdUser = await this.prismaUser.create({
+      data,
       include: { checkin: true },
     });
-    return userSchema.parse(foundUser);
-  } catch (error) {
-    throw new AppErrors(`User with code ${code} not found`, 404);
+
+    return userSchema.parse(createdUser);
   }
-};
+
+  async getUsers(): Promise<userReturnManyType> {
+    const users = await this.prismaUser.findMany();
+
+    return userReturnManySchema.parse(users);
+  }
+
+  async findByCode({ code }: { code: string }): Promise<userType | undefined> {
+    try {
+      const foundUser = await this.prismaUser.findUnique({
+        where: { code },
+        include: { checkin: { include: { checkinHour: true } } },
+      });
+      return userSchema.parse(foundUser);
+    } catch (error) {
+      throw new AppErrors(`User with code ${code} not found`, 404);
+    }
+  }
+}
+
+const usersServices = new UsersServices(prisma);
+
+export { usersServices };

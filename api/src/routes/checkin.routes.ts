@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { register, retrieveCheckin } from "../controllers/checkins.controller";
+import { checkinsControllers } from "../controllers/checkins.controller";
 
 const checkinRouter: Router = Router();
 
-checkinRouter.post("/register", register);
-checkinRouter.get("/:id", retrieveCheckin);
+checkinRouter.post("/register/:userId", checkinsControllers.register);
+checkinRouter.get("/:userId", checkinsControllers.retrieveCheckin);
 
 export default checkinRouter;

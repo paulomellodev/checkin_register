@@ -28,7 +28,17 @@ model CheckinDate{
   date          DateTime        @db.Date
   user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String          @db.Uuid
-  total_hours   DateTime?       @db.Time(4)
-  
+  checkinHour   CheckinHour[]
+  total_hours   DateTime?       @db.Time()
+
   @@map("checkin")
+}
+
+model CheckinHour{
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  time          DateTime        @db.Time()
+  checkin       CheckinDate     @relation(fields: [checkinId], references: [id], onDelete: Cascade)
+  checkinId     String          @db.Uuid
+  
+  @@map("checkin_hour")
 }

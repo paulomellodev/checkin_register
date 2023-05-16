@@ -1,37 +1,36 @@
 import { ZodError } from "zod";
 import AppErrors from "../errors/app.error";
 import { Request, Response } from "express";
-import { findCheckinsByUserId, insert } from "../services/checkin.service";
 import {
   checkinDateCreateSchema,
   checkinDateReturnManySchema,
 } from "../dto/checkinDate.dto";
+import { checkinsServices } from "../services/checkin.service";
 
-export const register = async (req: Request, res: Response) => {
-  try {
-    console.log("aqui");
-    const validated = checkinDateCreateSchema.parse({
-      ...req.body,
-      date: new Date(req.body.date),
-    });
+class CheckinController {
+  async register(req: Request, res: Response) {
+    try {
+      const registeredCheckin = await checkinsServices.register({
+        userId: req.params.userId,
+      });
 
-    const registeredCheckin = await insert(validated);
-
-    return res.status(201).json(registeredCheckin);
-  } catch (error) {
-    console.log(error);
-    console.log(error instanceof ZodError);
-    if (error instanceof ZodError) {
-      console.log(error instanceof ZodError, "aqui");
-      throw new AppErrors(error.flatten().fieldErrors);
+      return res.status(201).json(registeredCheckin);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        throw new AppErrors(error.flatten().fieldErrors);
+      }
     }
   }
-};
 
-export const retrieveCheckin = async (req: Request, res: Response) => {
-  const checkins = checkinDateReturnManySchema.parse(
-    await findCheckinsByUserId(req.params.id)
-  );
+  async retrieveCheckin(req: Request, res: Response) {
+    const checkins = checkinDateReturnManySchema.parse(
+      await checkinsServices.findCheckinsByUserId(req.params.userId)
+    );
 
-  return res.status(201).json(checkins);
-};
+    return res.status(201).json(checkins);
+  }
+}
+
+const checkinsControllers = new CheckinController();
+
+export { checkinsControllers };

@@ -1,71 +1,98 @@
-import { prismaClient } from "../database/prismaClient";
+import { PrismaClient } from "@prisma/client";
 import { checkinDateReturnManySchema } from "../dto/checkinDate.dto";
 import {
   checkinDateCreateType,
   checkinDateSchema,
-  checkinDateType,
 } from "../dto/checkinDate.dto";
 import AppErrors from "../errors/app.error";
 import { calculateWorkingHours } from "../utils/calculateHours";
+import { prisma } from "../database/prismaClient";
 
-export const insert = async (data: checkinDateCreateType) => {
-  const formattedData = {
-    ...data,
-    date: new Date(data.date),
-  };
+class CheckinService {
+  private prismaCheckin: PrismaClient["checkinDate"];
 
-  const foundCheckinToday = await prismaClient.checkinDate.findMany({
-    where: {
-      AND: [
-        {
-          date: new Date(formattedData.date),
-        },
-        {
-          userId: formattedData.userId,
-        },
-      ],
-    },
-    include: {
-      checkin_time: true,
-    },
-  });
+  constructor(prismaClient: PrismaClient) {
+    this.prismaCheckin = prismaClient.checkinDate;
+  }
 
-  if (!!foundCheckinToday) {
-    const parsedFoundcheckin = checkinDateSchema.parse(foundCheckinToday);
-    const totalHours = calculateWorkingHours(parsedFoundcheckin, data.date)
-      .toLocaleString("pt-BR")
-      .substring(12);
+  async register({ userId }: checkinDateCreateType) {
+    const currentDateTime = new Date();
 
-    const updatedCheckin = await prismaClient.checkinDate.update({
+    const foundCheckinToday = await this.prismaCheckin.findFirst({
       where: {
-        id: foundCheckinToday[0].id,
+        AND: [
+          {
+            date: {
+              equals: currentDateTime,
+            },
+          },
+          {
+            userId: userId,
+          },
+        ],
       },
+      include: {
+        checkinHour: true,
+      },
+    });
+
+    if (!!foundCheckinToday) {
+      let updatedCheckin = await this.prismaCheckin.update({
+        where: {
+          id: foundCheckinToday.id,
+        },
+        data: {
+          checkinHour: { create: { time: currentDateTime } },
+        },
+        include: { checkinHour: true },
+      });
+
+      if (updatedCheckin.checkinHour.length % 2 === 0) {
+        let totalHours = calculateWorkingHours(updatedCheckin.checkinHour);
+
+        updatedCheckin = await this.prismaCheckin.update({
+          where: {
+            id: foundCheckinToday.id,
+          },
+          data: {
+            total_hours: totalHours,
+          },
+          include: { checkinHour: true },
+        });
+      }
+      return checkinDateSchema.parse(updatedCheckin);
+    }
+
+    const registeredCheckin = await this.prismaCheckin.create({
       data: {
-        total_hours: totalHours,
-        ...formattedData,
+        userId,
+        date: currentDateTime,
+        checkinHour: {
+          create: {
+            time: currentDateTime,
+          },
+        },
       },
-      include: { checkin_time: true },
+      include: { checkinHour: true },
     });
-    return checkinDateSchema.parse(updatedCheckin);
+
+    return checkinDateSchema.parse(registeredCheckin);
   }
 
-  const registeredCheckin = await prismaClient.checkinDate.create({
-    data: {
-      ...formattedData,
-    },
-  });
+  findCheckinsByUserId = async (userId: string) => {
+    try {
+      const foundAllCheckins = await this.prismaCheckin.findMany({
+        where: { userId },
+        orderBy: { date: "desc" },
+        include: { checkinHour: true },
+      });
+      return foundAllCheckins;
+    } catch (error) {
+      throw new AppErrors(`User with this ID ${userId} not found`, 404);
+    }
+  };
+}
 
-  return checkinDateSchema.parse(registeredCheckin);
-};
+const checkinsServices = new CheckinService(prisma);
 
-export const findCheckinsByUserId = async (userId: string) => {
-  try {
-    const foundAllCheckins = await prismaClient.checkinDate.findMany({
-      where: { userId },
-      orderBy: { date: "desc" },
-    });
-    return checkinDateReturnManySchema.parse(foundAllCheckins);
-  } catch (error) {
-    throw new AppErrors(`User with this ID ${userId} not found`, 404);
-  }
-};
+export { checkinsServices };

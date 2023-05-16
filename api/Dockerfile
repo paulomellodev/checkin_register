@@ -2,10 +2,8 @@ FROM node:alpine
 
 WORKDIR /app
 
+EXPOSE 3030
+
 COPY . .
 
-COPY .env .
-
 RUN npm install
-
-RUN npx prisma generate

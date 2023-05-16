@@ -8,7 +8,7 @@ const userSchema = z.object({
   checkin: checkinDateReturnManySchema || [],
 });
 
-const userCreateSchema = userSchema.omit({ id: true, checkin: true });
+const userCreateSchema = userSchema.omit({ checkin: true, id: true });
 const userReturnManySchema = userSchema.omit({ checkin: true }).array();
 
 type userCreateType = z.infer<typeof userCreateSchema>;

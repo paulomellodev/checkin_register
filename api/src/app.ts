@@ -10,29 +10,22 @@ import express, {
 import cors from "cors";
 import userRouter from "./routes/users.routes";
 import AppErrors from "./errors/app.error";
-import { prismaClient } from "./database/prismaClient";
 import checkinRouter from "./routes/checkin.routes";
+import { handleErrors } from "./middlewares/handleErrors.middleware";
+import { apiRouter } from "./routes/index.routes";
 
-const app: Application = express();
-app.use(cors());
-app.use(json());
-app.get("/me", async (req, res) => {
-  const result = await prismaClient.user.findMany();
-  res.json(result);
-});
-app.use("/users", userRouter);
-app.use("/checkin", checkinRouter);
+class App {
+  public express: Application;
+  constructor() {
+    this.express = express();
+    this.express.use(cors());
+    this.express.use(json());
+    this.express.use("/api", apiRouter);
 
-app.use(
-  (err: Error, request: Request, response: Response, next: NextFunction) => {
-    if (err instanceof AppErrors) {
-      return response.status(err.status).json({
-        error: err.message,
-      });
-    }
-    return response.status(400).json({
-      error: err.message,
-    });
+    this.express.use(handleErrors);
   }
-);
-export default app;
+}
+
+const app = new App();
+
+export { app };
