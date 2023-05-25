@@ -1,25 +1,15 @@
 import { z } from "zod";
 import { checkinHourReturnManySchema } from "./checkinHour.dto";
+import { formatHour } from "../utils/formatHour";
+import { formatDate } from "../utils/formatDate";
 
 const checkinDateSchema = z.object({
   id: z.string().uuid(),
-  date: z.date().transform((el) =>
-    Intl.DateTimeFormat("pt-BR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(el)
-  ),
+  date: z.date().transform((el) => formatDate(el)),
   userId: z.string().uuid(),
   checkinHour: checkinHourReturnManySchema.transform((els) => {
     return els.map((el) => {
-      return Intl.DateTimeFormat("pt-BR", {
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        hour12: false,
-        hourCycle: "h24",
-      }).format(el.time);
+      return formatHour(el.time);
     });
   }),
   total_hours: z
@@ -28,13 +18,7 @@ const checkinDateSchema = z.object({
     .optional()
     .transform((el) => {
       if (el !== null && el !== undefined) {
-        return Intl.DateTimeFormat("pt-BR", {
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
-          hour12: false,
-          hourCycle: "h24",
-        }).format(el);
+        return formatHour(el);
       }
     }),
 });
