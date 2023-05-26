@@ -67,6 +67,7 @@ class CheckinService {
       data: {
         userId,
         date: currentDateTime,
+        total_hours: new Date(0),
         checkinHour: {
           create: {
             time: currentDateTime,
