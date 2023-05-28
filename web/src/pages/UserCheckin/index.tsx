@@ -12,7 +12,9 @@ const UserCheckin = () => {
       <header className="flex justify-between items-start text-xs">
         <span className="font-bold">Relógio de ponto</span>
         <div className="flex-col text-right">
-          <p className="font-bold uppercase">{`#${loggedUser.code.toUpperCase()}`}</p>
+          <p className="font-bold uppercase">
+            {`#${loggedUser.code.toUpperCase()}`}
+          </p>
           <p className="text-gray-350">{loggedUser.name}</p>
         </div>
       </header>

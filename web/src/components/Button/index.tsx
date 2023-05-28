@@ -8,7 +8,8 @@ const Button = ({ children, ...rest }: ButtonProps) => {
   return (
     <button
       type="submit"
-      className="h-12 w-[100%] bg-orange-650 hover:bg-orange-500 rounded-md font-bold text-blue-850 transition-colors"
+      className="h-12 w-[100%] bg-orange-650 hover:bg-orange-500 rounded-md
+                 font-bold text-blue-850 transition-colors"
       {...rest}
     >
       {children}
