@@ -18,6 +18,8 @@ services:
       timeout: 3s
       retries: 5
       start_period: 2s
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   migration:
     container_name: ilumeo_migration
@@ -65,3 +67,6 @@ services:
       - ./web:/app
     depends_on:
       - api
+
+volumes:
+  pgdata:
